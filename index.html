@@ -114,7 +114,13 @@ div.slidiv {
     font-size: 8pt;
 }
 
-#slider1, #slider2, #slider3 {
+div.slidiv div.value {
+    float: left;
+    text-align: right;
+    width: 20px;
+}
+
+div.slidiv div.slider {
     float: right;
     margin-left: 10px;
     margin-right: 40px;
@@ -19502,9 +19508,9 @@ google.setOnLoadCallback(function() {
     }
 
     // Let's talk sliders
-    asl = $("#slider1");
-    bsl = $("#slider2");
-    csl = $("#slider3");
+    asl = $("#slider1 .slider");
+    bsl = $("#slider2 .slider");
+    csl = $("#slider3 .slider");
 
 
     // I set the sliders to various pts.
@@ -19512,36 +19518,49 @@ google.setOnLoadCallback(function() {
         asl.slider({
             min: 0,
             max: 16,
-            value: a,
+            change: function(event, ui) {
+                $("#slider1 .value").text(ui.value);
+            },
             slide: function(event, ui) {
                 b = c = 0;
                 bsl.slider('value', b);
                 csl.slider('value', c);
                 a = ui.value;
+                $("#slider1 .value").text(ui.value);
                 make_table(100 * (a * 100 + b * 10 + c));
             }
         });
         bsl.slider({
             min: 0,
             max: 9,
-            value: b,
+            change: function(event, ui) {
+                $("#slider2 .value").text(ui.value);
+            },
             slide: function(event, ui) {
                 c = 0;
                 csl.slider('value', c);
                 b = ui.value;
+                $("#slider2 .value").text(ui.value);
                 make_table(100 * (a * 100 + b * 10 + c));
             }
         });
         csl.slider({
             min: 0,
             max: 9,
-            value: c,
+            change: function(event, ui) {
+                $("#slider3 .value").text(ui.value);
+            },
             slide: function(event, ui) {
                 c = ui.value;
+                $("#slider3 .value").text(ui.value);
                 make_table(100 * (a * 100 + b * 10 + c));
             }
         });
 
+        // Set the values programmatically so the change handlers fire.
+        asl.slider('value', a);
+        bsl.slider('value', b);
+        csl.slider('value', c);
     }
 
     // I change the sliders up; I probably am not necessary if set_sliders were better designed.
@@ -19648,9 +19667,15 @@ google.setOnLoadCallback(function() {
     <h1>Unicode table for you</h1>
 
     <div id="sliders">
-        <div class="slidiv">x100 <div id="slider3"></div></div>
-        <div class="slidiv">x1,000 <div id="slider2"></div></div>
-        <div class="slidiv">x10,000 <div id="slider1"></div></div>
+        <div id="slider3" class="slidiv">
+            <div class="value"></div> &times;100 <div class="slider"></div>
+        </div>
+        <div id="slider2" class="slidiv">
+            <div class="value"></div> &times;1,000 <div class="slider"></div>
+        </div>
+        <div id="slider1" class="slidiv">
+            <div class="value"></div> &times;10,000 <div class="slider"></div>
+        </div>
 
         <a href="#0">ASCII</a>
         <a href="#9000">Symbols</a>

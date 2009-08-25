@@ -1,6 +1,6 @@
-<html>
- <head>
-  <title>Unicode table for you</title>
+<!DOCTYPE html>
+<html><head>
+    <title>Unicode table for you</title>
 <!--
 
  * Let's look at Unicode together!
@@ -42,30 +42,94 @@
 
 
  -->
-  <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/cupertino/jquery-ui.css"/>
+    <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.7.0/themes/cupertino/jquery-ui.css">
+    <style type="text/css">
 
 
-  <style type="text/css">
+body {
+    font-family: 'Arial Unicode MS', 'Helvetica', 'Helvetica Neue', sans-serif;
+    margin: 2em;
+    min-width: 1000px;
+}
 
-   /* TODO: tidy */
-   body {font-family:'Arial Unicode MS','Helvetica', 'Helvetica Neue', sans-serif;margin:2em;min-width:1000px;}
-   table {border-collapse:collapse;width:500px;}
-   td,td {width:50px;height:50px;text-align:center;vertical-align:center;font-size:1.5em;border:1px solid #ccc;}
-   .exp {font:8pt sans-serif;color:#aaa;height:1em;}
-   #unibox {clear:both;}
-   #bigletter {margin:0;}
-   #bigwrap {float:left;background:#eee;width:500px;height:500px;font-size:250px;}
-   #big {margin:50px;}
-   .medium {font-size:.05em;width:300px;}
-   a {text-decoration:none;color:black;}
-   div#sliders {width:1000px;padding-bottom:30px;font-size:8pt;text-transform:uppercase;}
-   div.slidiv {float:left;font-size:8pt;}
-   #slider1,#slider2,#slider3 {width:90px;float:right;margin-left:10px;margin-right:40px;}
-   .ui-slider-handle {}
-   #unicode {float:left;}
-   </style>
-  <script src="http://www.google.com/jsapi"></script>
-  <script>
+table {
+    border-collapse: collapse;
+    width: 500px;
+}
+
+td {
+    border: 1px solid #ccc;
+    font-size: 1.5em;
+    height: 50px;
+    text-align: center;
+    vertical-align: center;
+    width: 50px;
+}
+
+.exp {
+    color: #aaa;
+    font: 8pt sans-serif;
+    height: 1em;
+}
+
+#unibox {
+    clear: both;
+}
+
+#bigletter {
+    margin: 0;
+}
+
+#bigwrap {
+    background: #eee;
+    float: left;
+    font-size: 250px;
+    height: 500px;
+    width: 500px;
+}
+
+#big {
+    margin: 50px;
+}
+
+.medium {
+    font-size: .05em;
+    width: 300px;
+}
+
+a {
+    color: black;
+    text-decoration: none;
+}
+
+div#sliders {
+    font-size: 8pt;
+    padding-bottom: 30px;
+    text-transform: uppercase;
+    width: 1000px;
+}
+
+div.slidiv {
+    float: left;
+    font-size: 8pt;
+}
+
+#slider1, #slider2, #slider3 {
+    float: right;
+    margin-left: 10px;
+    margin-right: 40px;
+    width: 90px;
+}
+
+#unicode {
+    float: left;
+}
+
+
+    </style>
+    <script src="http://www.google.com/jsapi" type="text/javascript"></script>
+    <script type="text/javascript">
+
 
 // Shorten some vars for bandwidth savings
 l = ' LETTER ';
@@ -19413,204 +19477,197 @@ uni = {'0000':'NULL',
 'FFFB':'INTERLINEAR ANNOTATION TERMINATOR',
 'FFFC':'OBJECT REPLACEMENT CHAR.',
 'FFFD':'REPLACEMENT CHAR.',
-    'FFFFD':'<Plane 15 Private Use, Last>'};
+'FFFFD':'<Plane 15 Private Use, Last>'};
+
+// Load jQuery out of the motherbeast
+google.load("jquery", "1.3.2");
+google.load("jqueryui", "1.7.2");
+google.setOnLoadCallback(function() {
+
+    // Gives us hex from dec when we need it, padded.
+    function pad_four(x) {
+        x = x + '';
+        while (x.length < 4) {
+            x = '0' + x;
+        }
+        return x;
+    }
+
+    // Let's talk sliders
+    asl = $("#slider1");
+    bsl = $("#slider2");
+    csl = $("#slider3");
+
+
+    // I set the sliders to various pts.
+    function set_sliders(a, b, c) {
+        asl.slider({
+            min: 0,
+            max: 16,
+            value: a,
+            slide: function(event, ui) {
+                b = c = 0;
+                bsl.slider('value', b);
+                csl.slider('value', c);
+                a = ui.value;
+                make_table(100 * (a * 100 + b * 10 + c));
+            }
+        });
+        bsl.slider({
+            min: 0,
+            max: 9,
+            value: b,
+            slide: function(event, ui) {
+                c = 0;
+                csl.slider('value', c);
+                b = ui.value;
+                make_table(100 * (a * 100 + b * 10 + c));
+            }
+        });
+        csl.slider({
+            min: 0,
+            max: 9,
+            value: c,
+            slide: function(event, ui) {
+                c = ui.value;
+                make_table(100 * (a * 100 + b * 10 + c));
+            }
+        });
+
+    }
+
+    // I change the sliders up; I probably am not necessary if set_sliders were better designed.
+    function change_sliders(a, b, c) {
+        asl.slider('value', a);
+        bsl.slider('value', b);
+        csl.slider('value', c);
+        console.log('a=' + a + '; b=' + b + '; c=' + c);
+    }
+
+    // I make a table of characters in a friendly iterative/imperative manner
+    function make_table(top_left) {
+
+        top_left = parseInt(top_left);
+        /*      window.location=window.location+'#'+top_left; */
+        var i = 0;
+        var table = '<table>';
+        height = 10;
+        width = 10;
+        while (i < height) {
+            table = table + '<tr>';
+
+            var j = 0;
+            while (j < width) {
+                var no = top_left + (i * height) + j;
+                table = table + '<td id="' + no + '"><a href="#' + no + '">&#' + no + ';<div class="exp"><a href="http://en.wikipedia.org/wiki/&#' + no + ';">&amp;#' + no + ';<\/a><\/div><\/td>';
+                j++;
+            }
+            table = table + '<\/tr>';
+            i++;
+        }
+        var table = table + '<\/table>';
+        $('#unicode').html(table);
+
+        $('#unicode table tr td')
+        .mouseover(function() {
+            id = this.id;
+            var hx = pad_four(parseInt(this.id).toString(16).toUpperCase());
+            var name = '';
+            if (uni[hx]) {
+                name = uni[hx];
+            }
+
+            $(this).css({
+                'background': '#ffc'
+            });
+            $('#big').html('<div id="bigletter">&#' + this.id + ';<br/><\/div><div class="medium">&amp;#' + this.id + ';<br/>&amp;#x' + hx + ';<br/>' + name + '<\/div>');
+        })
+        .mouseout(function() {
+            $(this).css({
+                'background': '#fff'
+            });
+        });
+
+    }
 
 
 
-   // Load jQuery out of the motherbeast
-   google.load("jquery", "1.3.2");
-   google.load("jqueryui", "1.7.2");
-   google.setOnLoadCallback(function() {
-   
-   // Gives us hex from dec when we need it, padded.
-	function pad_four(x) {
-	  x = x + '';
-	  while (x.length < 4) {
-		x = '0' + x;
-	  }
-	  return x;
-	}
+    /* Here are some evil global variables to refactor. */
 
-// Let's talk sliders
+    the_top_left = a = b = c = 0;
 
-	asl = $("#slider1");
-	bsl = $("#slider2");
-	csl = $("#slider3");
+    /* This determines where we are from the hash string AND modifies global variables. */
 
+    function toSpot(hashString) {
+        var num_str = hashString.substring(1);
+        var pos = parseInt(num_str);
 
-// I set the sliders to various pts.
-	function set_sliders (a,b,c)  {
-	asl.slider({
-		  min:0,
-		  max:16,
-		  value:a,
-		  slide: function(event, ui) {
-		  b=c=0;
-		  bsl.slider('value',b);
-		  csl.slider('value',c);
-		  a = ui.value;
-		  make_table(100 * (a * 100 + b * 10 + c));
-		}});
-	bsl.slider({
-		  min:0,
-		  max:9,
-		  value:b,
-		  slide: function(event, ui) {
-		  c=0;
-		  csl.slider('value',c);
-		  b = ui.value;
-		  make_table(100 * (a * 100 + b * 10 + c));
-		}});
-	csl.slider({
-		  min:0,
-		  max:9,
-		  value:c,
-		  slide: function(event, ui) {
-		  c = ui.value;
-		  make_table(100 * (a * 100 + b * 10 + c));
-		}});
+        a = Math.floor(pos / 10000);
+        //      a = (a > 0) ? a : 0;
+        b = Math.floor((pos - a * 10000) / 1000);
+        //b = (b>0) ? b : 0;
+        c = Math.floor(((pos - a * 10000) - (b * 1000)) / 100);
+        //c = (c>0) ? c : 0;
+        tl = Math.round(pos / 100) * 100;
 
-	}
+        return tl;
+    }
 
-// I change the sliders up; I probably am not necessary if set_sliders were better designed.
-
-	function change_sliders (a,b,c)  {
-	  asl.slider('value',a);
-	  bsl.slider('value',b);
-	  csl.slider('value',c);
-	  console.log('a='+a+'; b='+b+'; c='+c);
-	}
-
-// I make a table of characters in a friendly iterative/imperative manner
-
-	function make_table(top_left) {
-
-	top_left = parseInt(top_left);
-	  /* 	  window.location=window.location+'#'+top_left; */
-	  var i=0;
-	  var table = '<table>';
-	  height = 10;
-	  width = 10;
-	  while (i<height) {
-	   table = table + '<tr>';
-
-	   var j=0;
-	   while (j<width) {
-		 var no = top_left + (i * height) + j ;
-		 table = table + '<td id="' + no +'"><a href="#'+no+'">&#' + no + ';<div class="exp"><a href="http://en.wikipedia.org/wiki/&#'+no+';">&amp;#'+no+';</a></div></td>';
-		 j++;
-	   }
-	   table = table + '</tr>';
-	   i++;
-	 }
-	 var table = table + '</table>';
-	 $('#unicode').html(table);		  
-
-	 $('#unicode table tr td')
-	   .mouseover(function(){
-		   id = this.id;
-		   var hx = pad_four(parseInt(this.id).toString(16).toUpperCase());
-		   var name = '';
-		   if (uni[hx]) {
-			 name = uni[hx];
-		   }
-
-		   $(this).css({'background':'#ffc'});
-		   $('#big').html('<div id="bigletter">&#'+this.id+';<br/></div><div class="medium">&amp;#' + this.id + ';<br/>&amp;#x'+hx+';<br/>'+ name +'</div>');
-		 })
-	   .mouseout(function(){
-		   $(this).css({'background':'#fff'});
-		 });
-
-	}
+    // Do we have a hash?
+    if (window.location.hash) {
+        the_top_left = toSpot(window.location.hash);
+    }
 
 
+    // Make all the hrefs update the location with the hash, which makes it all bookmarkable
+    $("#sliders a").click(function() {
+        var wanted = this.href.substring(this.href.indexOf('#'));
+        make_table(toSpot(wanted));
+        change_sliders(a, b, c);
+    });
 
-        /* Here are some evil global variables to refactor. */			   
+    // FINALLY! Make me a table!
+    make_table(the_top_left);
 
-	the_top_left=a=b=c=0;
-
-	/* This determines where we are from the hash string AND modifies global variables. */
-
-	function toSpot(hashString) {
-	    var num_str = hashString.substring(1);
-	    var pos = parseInt(num_str);
-
-	    a = Math.floor(pos/10000);
-	    //	    a = (a > 0) ? a : 0;
-
-	    b = Math.floor((pos - a * 10000)/1000);
-	    //b = (b>0) ? b : 0;
-
-	    c = Math.floor(((pos - a * 10000) - (b * 1000))/100);
-	    //c = (c>0) ? c : 0;
-
-	    tl = Math.round(pos/100) * 100;
-
-	    return tl;
-	}
-
-// Do we have a hash? 
-	if (window.location.hash) {
-	    the_top_left = toSpot(window.location.hash);
-	}
+    // And set my sliders to whatever you've come up with
+    set_sliders(a, b, c);
+});
 
 
-// Make all the hrefs update the location with the hash, which makes it all bookmarkable
+    </script>
+</head><body>
 
-	$("#sliders a").click(function(){
-		var wanted = this.href.substring(this.href.indexOf('#'));
-		make_table(toSpot(wanted));
-		change_sliders(a,b,c);
-	    });
+    <h1>Unicode table for you</h1>
 
-// FINALLY! Make me a table!
-	make_table(the_top_left);
+    <div id="sliders">
+        <div class="slidiv">x100 <div id="slider3"></div></div>
+        <div class="slidiv">x1,000 <div id="slider2"></div></div>
+        <div class="slidiv">x10,000 <div id="slider1"></div></div>
 
-// And set my sliders to whatever you've come up with
-	set_sliders(a,b,c);
-  });
+        <a href="#0">ASCII</a>
+        <a href="#9000">Symbols</a>
+        <a href="#9100">Nerd A</a>
+        <a href="#9200">B</a>
+        <a href="#9300">Circled</a>
+        <a href="#9500">Lines</a>
+        <a href="#9600">Shapes</a>
+        <a href="#9700">Dings</a>
+        <a href="#9800">Astro</a>
+    </div>
 
+    <div id="unibox">
 
-  </script>
+        <div id="unicode"></div>
+        <div id="bigwrap">
+            <div id="big"></div>
+        </div>
 
+        <!-- yeah, I know. Like I said, it's a hack. -->
+        <div style="font-size:8pt;width:100%;clear:both;color:#888;padding-top:2em;">
+            &nbsp;<br>
+            <br>
+            The code for this toy is contained in this page, and is available <a href="http://docs.jquery.com/License">under both the GPL and MIT licenses</a>. View source and help yourself.
+        </div>
+    </div>
 
- </head>
- <body>
-
-  <h1>Unicode table for you</h1>
-
-	<div id="sliders">
-	  <div class="slidiv">x100<div id="slider3"></div></div>
-	  <div class="slidiv">x1,000<div id="slider2"></div></div>
-	  <div class="slidiv">x10,000<div id="slider1"></div></div>
-	  
-	  <a href="#0">ASCII</a>
-	  <a href="#9000">Symbols</a>
-	  <a href="#9100">Nerd A</a>
-	  <a href="#9200">B</a>
-	  <a href="#9300">Circled</a>
-	  <a href="#9500">Lines</a>
-	  <a href="#9600">Shapes</a>
-	  <a href="#9700">Dings</a>
-	  <a href="#9800">Astro</a>
-	</div>
-	
-	 <div id="unibox">
-	   <div id="unicode"></div>
-	   <div id="bigwrap">
-	     <div id="big"></div>
-	   </div>
-	 <!-- yeah, I know. Like I said, it's a hack. -->
-	 <div style="font-size:8pt;width:100%;clear:both;color:#888;padding-top:2em;">&nbsp;<br/><br/>The code for this toy is contained in this page, and is available <a href="http://docs.jquery.com/License">under both the GPL and MIT licenses</a>. View source and help yourself.</div>
-
-	 </div>
-	 
-
-
-
-
-
-
- </body>
-</html>
+</body></html>
